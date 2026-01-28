@@ -5,85 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Performance Liebherr v6</title>
+    <title>Performance Liebherr v7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root { --apple-blue: #0A84FF; --apple-bg: #000000; --apple-card: #1C1C1E; }
-        body { background-color: var(--apple-bg); color: white; font-family: -apple-system, sans-serif; padding-bottom: 140px; }
-        .card { background-color: var(--apple-card); border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 0.5px solid #2C2C2E; }
+        body { background-color: var(--apple-bg); color: white; font-family: -apple-system, sans-serif; padding-bottom: 130px; }
+        .card { background-color: var(--apple-card); border-radius: 18px; padding: 18px; margin-bottom: 12px; border: 0.5px solid #2C2C2E; }
         
-        .nav-bar { background: rgba(28, 28, 30, 0.96); backdrop-filter: blur(25px); position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; padding: 22px 0 45px 0; border-top: 0.5px solid #38383A; z-index: 100; }
-        .nav-btn { display: flex; flex-direction: column; align-items: center; color: #636366; transition: all 0.3s; }
-        .nav-btn.active { color: var(--apple-blue); transform: scale(1.1); }
-        .nav-btn svg { width: 28px; height: 28px; margin-bottom: 6px; }
+        .nav-bar { 
+            background: rgba(28, 28, 30, 0.96); 
+            backdrop-filter: blur(20px); 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 15px 10px 35px 10px; 
+            border-top: 0.5px solid #38383A; 
+            z-index: 100; 
+        }
+        
+        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; color: #636366; transition: 0.3s; }
+        .nav-btn.active { color: var(--apple-blue); }
+        .nav-btn svg { width: 24px; height: 24px; margin-bottom: 4px; }
 
-        .exp-bar { height: 10px; background: #2C2C2E; border-radius: 5px; overflow: hidden; }
-        .exp-fill { height: 100%; background: linear-gradient(90deg, #0A84FF, #5E5CE6, #BF5AF2); transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .exp-bar { height: 8px; background: #2C2C2E; border-radius: 4px; overflow: hidden; }
+        .exp-fill { height: 100%; background: linear-gradient(90deg, #0A84FF, #5E5CE6); transition: width 0.5s; }
         
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-        .day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 13px; font-weight: 600; }
-        .status-done { background: var(--apple-blue); color: white; box-shadow: 0 0 10px rgba(10, 132, 255, 0.4); }
-        .status-current { border: 1.5px solid white !important; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 13px; font-weight: 600; border: 2px solid transparent; }
+        .status-done { background: var(--apple-blue) !important; color: white !important; border-color: var(--apple-blue) !important; }
+        .status-current { border-color: white !important; }
+        .status-selected { border-color: #5E5CE6 !important; background: rgba(94, 92, 230, 0.2); }
         
-        /* Style des Rituels */
-        .ritual-btn { background: #1C1C1E; border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 15px; transition: 0.2s; border: 0.5px solid #2C2C2E; width: 100%; text-align: left; }
-        .ritual-done { background: rgba(10, 132, 255, 0.1); border-color: var(--apple-blue); }
-        .ritual-done svg { color: var(--apple-blue); }
-        .ritual-icon { width: 22px; height: 22px; color: #636366; transition: 0.2s; }
+        .ritual-btn { background: #1C1C1E; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px; border: 0.5px solid #2C2C2E; width: 100%; margin-bottom: 8px; }
+        .ritual-done { border-color: var(--apple-blue); background: rgba(10, 132, 255, 0.1); }
+        
+        .recipe-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
     <div class="p-6 sticky top-0 bg-black/90 backdrop-blur-xl z-50 border-b border-white/5">
-        <div class="flex justify-between items-center mb-3">
-            <h1 class="text-3xl font-black italic tracking-tighter uppercase leading-none text-white">LVL <span id="lvl-display">1</span></h1>
-            <div class="text-right">
-                <p class="text-[14px] font-mono font-bold text-blue-400 leading-none"><span id="exp-display">0</span> <span class="text-gray-600 text-xs">/ <span id="next-lvl-display">200</span></span></p>
-            </div>
+        <div class="flex justify-between items-center mb-2">
+            <h1 class="text-2xl font-black italic tracking-tighter uppercase">LVL <span id="lvl-display">1</span></h1>
+            <p class="text-sm font-mono font-bold text-blue-400"><span id="exp-display">0</span> / <span id="next-lvl-display">200</span> XP</p>
         </div>
         <div class="exp-bar"><div id="exp-fill" class="exp-fill"></div></div>
     </div>
 
-    <div id="app-content" class="px-5 pt-4"></div>
+    <div id="app-content" class="px-4 pt-4"></div>
 
     <nav class="nav-bar">
         <button onclick="renderTraining()" id="btn-train" class="nav-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18h4V6H6v12zM14 18h4V6h-4v12zM2 12h4m12 0h4"/></svg>
-            <span class="text-[10px] font-black uppercase tracking-widest">Training</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18h4V6H6v12zM14 18h4V6h-4v12zM2 12h4m12 0h4"/></svg>
+            <span class="text-[9px] font-bold uppercase">Training</span>
         </button>
         <button onclick="renderHome()" id="btn-home" class="nav-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            <span class="text-[10px] font-black uppercase tracking-widest">Home</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span class="text-[9px] font-bold uppercase">Home</span>
         </button>
         <button onclick="renderDiet()" id="btn-diet" class="nav-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <span class="text-[10px] font-black uppercase tracking-widest">Diet</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path></svg>
+            <span class="text-[9px] font-bold uppercase">Diet</span>
         </button>
     </nav>
 
     <script>
-        // Définition des icônes SVG pour les rituels
-        const icons = {
-            stretch: `<svg class="ritual-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M12 8v4l-2 3"/><path d="M14 8l3 4"/><path d="M5 21l3-7 4-1 4 1 3 7"/><path d="M7 8h10"/></svg>`,
-            water: `<svg class="ritual-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`,
-            teeth: `<svg class="ritual-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21h14"/><path d="M7 21v-3a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v3"/><path d="M10 8.5V10"/><path d="M14 8.5V10"/><path d="M9 13h6"/><path d="M8 3c.5 0 2.5 1 2.5 3s-1 4-1.5 5.5l1 1.5h4l1-1.5c-.5-1.5-1.5-3.5-1.5-5.5s2-3 2.5-3"/></svg>`,
-            draw: `<svg class="ritual-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`
-        };
-
-        const ritualsList = [
-            { id: 'stretch', label: 'Souplesse Complète', icon: icons.stretch },
-            { id: 'water', label: 'Objectif 2L Eau', icon: icons.water },
-            { id: 'teeth', label: 'Brossage Dents', icon: icons.teeth },
-            { id: 'draw', label: 'Séance Dessin', icon: icons.draw }
-        ];
-
-        let state = JSON.parse(localStorage.getItem('climbDataV6')) || {
+        let state = JSON.parse(localStorage.getItem('climbDataV7')) || {
             totalExp: 0,
             history: {},
             ritualsHistory: {},
             diet: [],
-            recipes: [{title: "Dahl express", desc: "Lentilles + Riz + Épinards"}],
+            recipes: [{title: "Dahl de Lentilles", desc: "1. Cuire lentilles corail avec curry.\n2. Servir avec riz et épinards frais.\n3. Riche en fer et protéines."}],
             climbingActivities: { volume: null, projet: null },
+            selectedDate: new Date().toISOString().split('T')[0],
             currentViewDate: new Date()
         };
 
@@ -99,26 +95,18 @@
 
         function getLevelData(exp) {
             let lvl = 1;
-            while (exp >= Math.floor(200 * Math.pow(lvl, 1.5))) {
-                exp -= Math.floor(200 * Math.pow(lvl, 1.5));
-                lvl++;
-            }
+            while (exp >= Math.floor(200 * Math.pow(lvl, 1.5))) { exp -= Math.floor(200 * Math.pow(lvl, 1.5)); lvl++; }
             return { lvl, currentExp: exp, nextLvlExp: Math.floor(200 * Math.pow(lvl, 1.5)) };
         }
 
-        function getXPGain(lvl) { return 50 + (lvl * 10); }
-
-        function save() { 
-            localStorage.setItem('climbDataV6', JSON.stringify(state)); 
-            updateHeader(); 
-        }
+        function save() { localStorage.setItem('climbDataV7', JSON.stringify(state)); updateHeader(); }
 
         function updateHeader() {
-            const data = getLevelData(state.totalExp);
-            document.getElementById('lvl-display').innerText = data.lvl;
-            document.getElementById('exp-display').innerText = data.currentExp;
-            document.getElementById('next-lvl-display').innerText = data.nextLvlExp;
-            document.getElementById('exp-fill').style.width = (data.currentExp / data.nextLvlExp * 100) + '%';
+            const d = getLevelData(state.totalExp);
+            document.getElementById('lvl-display').innerText = d.lvl;
+            document.getElementById('exp-display').innerText = d.currentExp;
+            document.getElementById('next-lvl-display').innerText = d.nextLvlExp;
+            document.getElementById('exp-fill').style.width = (d.currentExp / d.nextLvlExp * 100) + '%';
         }
 
         function renderHome() {
@@ -129,37 +117,34 @@
 
             let html = `
                 <div class="card bg-gradient-to-br from-blue-600/10 to-transparent border-blue-500/20">
-                    <h2 class="text-[10px] font-black text-blue-400 uppercase tracking-[2px] mb-3 text-center">Planning de la semaine</h2>
+                    <h2 class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-3">Planning</h2>
                     <div class="space-y-1.5 text-[10px]">
-                        ${weekMissions.map(m => `<div class="flex justify-between border-b border-white/5 pb-1"><span class="w-12 font-black text-white uppercase">${m.day.slice(0,3)}</span><span class="flex-1 italic text-gray-500">${m.focus}</span><span class="text-right text-gray-300">${m.mission}</span></div>`).join('')}
+                        ${weekMissions.map(m => `<div class="flex justify-between border-b border-white/5 pb-1"><span class="w-10 font-bold text-white uppercase">${m.day.slice(0,3)}</span><span class="flex-1 italic text-gray-500 px-2">${m.focus}</span><span class="text-right">${m.mission}</span></div>`).join('')}
                     </div>
                 </div>
 
                 <div class="card">
                     <div class="flex justify-between items-center mb-4">
                         <button onclick="changeMonth(-1)">◀</button>
-                        <h2 class="font-black uppercase tracking-widest text-[11px]">${monthNames[state.currentViewDate.getMonth()]}</h2>
+                        <h2 class="font-bold text-xs uppercase tracking-widest">${monthNames[state.currentViewDate.getMonth()]}</h2>
                         <button onclick="changeMonth(1)">▶</button>
                     </div>
                     <div class="calendar-grid">${generateCalendarHTML()}</div>
                 </div>
 
-                <div id="mission-zone" class="card border-l-4 border-blue-500 bg-blue-500/5">${renderMissionDetails(todayStr)}</div>
+                <div id="mission-zone" class="card border-l-4 border-blue-500 bg-blue-500/5">${renderMissionDetails(state.selectedDate)}</div>
 
-                <h3 class="text-[10px] font-black text-gray-500 uppercase tracking-[3px] ml-1 mb-3">Rituels du jour (+10 XP)</h3>
-                <div class="grid grid-cols-1 gap-3 mb-8">
-                    ${ritualsList.map(r => {
-                        const isDone = state.ritualsHistory[todayStr] && state.ritualsHistory[todayStr][r.id];
-                        return `<button onclick="toggleRitual('${todayStr}', '${r.id}')" class="ritual-btn ${isDone ? 'ritual-done' : ''}">
-                            ${r.icon}
-                            <span class="text-sm font-bold flex-1">${r.label}</span>
-                            <span class="text-[10px] font-black opacity-50 uppercase">${isDone ? '✓' : 'A faire'}</span>
+                <h3 class="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 mb-3">Rituels (+10 XP)</h3>
+                <div class="space-y-2 mb-8">
+                    ${['Souplesse', '2L Eau', 'Dents', 'Dessin'].map((l, i) => {
+                        const id = ['str','wat','tea','dra'][i];
+                        const isDone = state.ritualsHistory[todayStr] && state.ritualsHistory[todayStr][id];
+                        return `<button onclick="toggleRitual('${todayStr}', '${id}')" class="ritual-btn ${isDone ? 'ritual-done' : ''}">
+                            <div class="w-2 h-2 rounded-full ${isDone?'bg-blue-500':'bg-gray-700'}"></div>
+                            <span class="text-xs font-bold flex-1">${l}</span>
+                            <span class="text-[9px] font-black opacity-40">${isDone ? '✓' : '+10'}</span>
                         </button>`;
                     }).join('')}
-                </div>
-
-                <div class="p-6 text-center">
-                    <button onclick="exportData()" class="text-[9px] text-gray-700 uppercase font-black border border-gray-900 px-6 py-2 rounded-full active:bg-white active:text-black">Exporter mes données</button>
                 </div>
             `;
             document.getElementById('app-content').innerHTML = html;
@@ -174,11 +159,18 @@
             for (let i = 0; i < firstDay; i++) html += `<div></div>`;
             for (let i = 1; i <= daysInMonth; i++) {
                 const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
-                const status = state.history[dateStr] === 'done' ? 'status-done' : '';
-                html += `<div onclick="selectDay('${dateStr}')" class="day ${status} ${dateStr===todayStr?'status-current':''}">${i}</div>`;
+                const isSelected = dateStr === state.selectedDate;
+                const isToday = dateStr === todayStr;
+                const isDone = state.history[dateStr] === 'done';
+                let classes = isDone ? 'status-done' : (isToday ? 'status-current' : '');
+                if (isSelected && !isDone) classes += ' status-selected';
+                html += `<div onclick="selectDay('${dateStr}')" class="day ${classes}">${i}</div>`;
             }
             return html;
         }
+
+        function selectDay(d) { state.selectedDate = d; renderHome(); }
+        function changeMonth(o) { state.currentViewDate.setMonth(state.currentViewDate.getMonth() + o); renderHome(); }
 
         function renderMissionDetails(dateStr) {
             const dayIdx = new Date(dateStr).getDay();
@@ -186,62 +178,53 @@
             const isDone = state.history[dateStr] === 'done';
             const todayStr = new Date().toISOString().split('T')[0];
             return `
-                <p class="text-[10px] text-blue-400 font-black mb-1 uppercase tracking-widest">${dateStr===todayStr?'Session Principale':'Focus du jour'}</p>
-                <p class="text-lg font-black mb-4 leading-tight">${mission}</p>
-                ${isDone ? `<p class="text-blue-400 font-bold text-center py-2 border border-blue-500/30 rounded-lg">MISSION RÉUSSIE</p>` : (dateStr===todayStr ? `<button onclick="validateMission('${dateStr}')" class="w-full bg-blue-600 py-4 rounded-xl font-black uppercase text-xs tracking-[2px] shadow-lg shadow-blue-500/20">Valider Séance</button>` : `<p class="text-gray-600 text-center italic text-xs">Cliquer sur aujourd'hui pour valider.</p>`)}
+                <p class="text-[9px] text-blue-400 font-black mb-1 uppercase tracking-widest">${dateStr===todayStr?'Aujourd’hui':'Mission du '+dateStr}</p>
+                <p class="text-base font-black mb-3">${mission}</p>
+                ${isDone ? `<p class="text-blue-400 font-bold text-center text-sm">✓ RÉALISÉ</p>` : (dateStr===todayStr ? `<button onclick="validateMission('${dateStr}')" class="w-full bg-blue-600 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest">Valider Séance</button>` : `<p class="text-gray-600 text-center italic text-[10px]">Cliquer sur aujourd'hui pour valider</p>`)}
             `;
         }
 
-        function toggleRitual(dateStr, ritualId) {
-            if (!state.ritualsHistory[dateStr]) state.ritualsHistory[dateStr] = {};
-            if (!state.ritualsHistory[dateStr][ritualId]) {
-                state.ritualsHistory[dateStr][ritualId] = true;
-                state.totalExp += 10;
-            } else {
-                state.ritualsHistory[dateStr][ritualId] = false;
-                state.totalExp -= 10;
-            }
-            save(); renderHome();
-        }
-
-        function selectDay(d) { document.getElementById('mission-zone').innerHTML = renderMissionDetails(d); }
-        function changeMonth(o) { state.currentViewDate.setMonth(state.currentViewDate.getMonth() + o); renderHome(); }
         function validateMission(d) {
             if (weekMissions[new Date(d).getDay()].mission.includes("Escalade")) {
-                showClimbChoice(d);
+                document.getElementById('mission-zone').innerHTML = `<p class="mb-3 text-[10px] font-bold uppercase text-gray-500 text-center text-[10px]">Type de séance :</p>
+                    <div class="grid grid-cols-2 gap-2"><button onclick="complete('${d}', 'volume')" class="bg-green-700 py-3 rounded-xl font-black text-[9px] uppercase tracking-widest">Volume</button>
+                    <button onclick="complete('${d}', 'projet')" class="bg-purple-700 py-3 rounded-xl font-black text-[9px] uppercase tracking-widest">Projet</button></div>`;
             } else { complete(d); }
         }
-        function showClimbChoice(d) {
-            document.getElementById('mission-zone').innerHTML = `<p class="mb-4 text-[10px] font-black uppercase text-gray-500 text-center">Choisir la séance :</p>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="complete('${d}', 'volume')" class="bg-green-700 py-3 rounded-xl font-black text-[10px] uppercase">Volume</button>
-                    <button onclick="complete('${d}', 'projet')" class="bg-purple-700 py-3 rounded-xl font-black text-[10px] uppercase">Projet</button>
-                </div>`;
-        }
+
         function complete(d) { 
             const data = getLevelData(state.totalExp);
-            state.history[d] = 'done'; state.totalExp += getXPGain(data.lvl); 
-            save(); renderHome(); 
+            state.history[d] = 'done'; state.totalExp += (50 + (data.lvl * 10)); save(); renderHome(); 
         }
-        function exportData() { navigator.clipboard.writeText(JSON.stringify(state)); alert("Copié !"); }
+
+        function toggleRitual(d, id) {
+            if (!state.ritualsHistory[d]) state.ritualsHistory[d] = {};
+            state.ritualsHistory[d][id] = !state.ritualsHistory[d][id];
+            state.totalExp += state.ritualsHistory[d][id] ? 10 : -10;
+            save(); renderHome();
+        }
 
         function renderTraining() {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-train').classList.add('active');
             document.getElementById('app-content').innerHTML = `
                 <div class="card border-l-4 border-blue-500">
-                    <h3 class="font-black text-blue-400 mb-2 uppercase text-xs tracking-widest">Mini Crux : Tirage Doigts</h3>
-                    <div class="space-y-4 mt-4 text-xs">
-                        <div class="bg-black/40 p-4 rounded-xl"><p class="font-black mb-1">NO-HANG MAX (7s)</p><p class="text-gray-400 leading-relaxed">Tirage à une main sur réglette 20mm. 90% d'effort. 5 séries. Repos 2'30 entre les mains.</p></div>
-                        <div class="bg-black/40 p-4 rounded-xl"><p class="font-black mb-1">TRACTIONS LESTÉES</p><p class="text-gray-400 leading-relaxed">4 séries de 5 reps. Contrôle total du mouvement.</p></div>
-                    </div>
+                    <h3 class="font-black text-blue-400 mb-2 uppercase text-[10px] tracking-widest">Mini Crux (No-Hang)</h3>
+                    <p class="text-[11px] text-gray-400 leading-relaxed"><b>Max Hangs :</b> Tirage 7s à 90% d'effort. 5 séries par main. Repos 2'30. Indispensable pour la force pure en 7a/b.</p>
+                </div>
+                <div class="card border-l-4 border-purple-500">
+                    <h3 class="font-black text-purple-400 mb-2 uppercase text-[10px] tracking-widest">Hangboard (Salle)</h3>
+                    <p class="text-[11px] text-gray-400 leading-relaxed mb-2"><b>Début de séance :</b> Échauffement 10 min (grosses prises) puis 3-5 suspensions sur 20mm pour réactiver le système nerveux.</p>
+                    <p class="text-[11px] text-gray-400 leading-relaxed"><b>Fin de séance :</b> 6 séries de 7s suspensions (20mm) pour bâtir la rési terminale.</p>
                 </div>
                 <div class="card border-l-4 border-orange-500">
-                    <h3 class="font-black text-orange-400 mb-2 uppercase text-xs tracking-widest">Genoux & Hanche</h3>
-                    <div class="space-y-4 mt-4 text-xs">
-                        <div class="bg-black/40 p-4 rounded-xl"><p class="font-black mb-1 underline italic">LA CHAISE (ISOMÉTRIE)</p><p class="text-gray-400 leading-relaxed">3 x 45s contre un mur. Indispensable avant le volley pour protéger le tendon rotulien.</p></div>
-                        <div class="bg-black/40 p-4 rounded-xl"><p class="font-black mb-1">POSTURES 2 MIN</p><p class="text-gray-400 leading-relaxed">Grenouille et Pigeon. Relâchement maximal.</p></div>
-                    </div>
+                    <h3 class="font-black text-orange-400 mb-2 uppercase text-[10px] tracking-widest">Volley (Prévention)</h3>
+                    <p class="text-[11px] text-gray-400 leading-relaxed"><b>Échauffement :</b> 15 min de mobilité dynamique (hanches/chevilles).<br><b>Indispensable :</b> Tibialis Raises (15 reps) pour protéger le genou lors des sauts.</p>
+                </div>
+                <div class="card border-l-4 border-green-500">
+                    <h3 class="font-black text-green-400 mb-2 uppercase text-[10px] tracking-widest">Souplesse & Genou</h3>
+                    <p class="text-[11px] text-gray-400 leading-relaxed mb-2"><b>La Chaise (Wall Sit) :</b> Dos au mur, jambes à 90°. 3x45s. Bloque la douleur rotulienne.</p>
+                    <p class="text-[11px] text-gray-400 leading-relaxed"><b>Grenouille :</b> Genoux écartés au sol, pieds vers l'extérieur (2 min).<br><b>Pigeon :</b> Une jambe pliée devant, l'autre tendue derrière (2 min/côté).</p>
                 </div>`;
         }
 
@@ -250,20 +233,31 @@
             document.getElementById('btn-diet').classList.add('active');
             let total = state.diet.reduce((sum, item) => sum + parseFloat(item.price), 0);
             document.getElementById('app-content').innerHTML = `
-                <div class="card bg-gradient-to-t from-green-600/10 to-transparent text-center border-green-500/20">
-                    <p class="text-[10px] text-gray-500 font-black uppercase mb-1">Budget Hebdo</p>
-                    <p class="text-5xl font-black ${total < 50 ? 'text-green-400' : (total===50?'text-blue-400':'text-red-400')}">${total.toFixed(2)}€</p>
+                <div class="card bg-green-500/5 text-center">
+                    <p class="text-[10px] text-gray-500 font-black uppercase tracking-widest">Budget Semaine</p>
+                    <p class="text-4xl font-black ${total < 50 ? 'text-green-400' : (total===50?'text-blue-400':'text-red-400')}">${total.toFixed(2)}€</p>
                 </div>
                 <div class="card">
                     <div class="flex gap-2 mb-4"><input id="in-n" type="text" placeholder="Aliment" class="bg-white/5 border border-white/10 p-3 rounded-xl flex-1 text-sm"><input id="in-p" type="number" placeholder="€" class="bg-white/5 border border-white/10 p-3 rounded-xl w-20 text-sm"><button onclick="addI()" class="bg-blue-600 px-5 rounded-xl font-bold">+</button></div>
-                    <div class="space-y-2">${state.diet.map((item, i) => `<div class="flex justify-between items-center text-sm bg-black/40 p-3 rounded-xl border border-white/5"><span onclick="toggleI(${i})" class="${item.checked?'line-through text-gray-600':''}">${item.name} (${item.price}€)</span><button onclick="removeI(${i})" class="text-red-500 p-2">✕</button></div>`).join('')}</div>
+                    <div class="space-y-2">${state.diet.map((item, i) => `<div class="flex justify-between items-center text-sm bg-black/40 p-3 rounded-xl"><span onclick="toggleI(${i})" class="${item.checked?'line-through text-gray-600':''}">${item.name} (${item.price}€)</span><button onclick="removeI(${i})" class="text-red-500 p-2">✕</button></div>`).join('')}</div>
                 </div>
-                <div class="card"><h3 class="font-black mb-4 text-[10px] tracking-widest uppercase text-blue-400">Recettes Stagiaire</h3>
-                    <div class="flex flex-col gap-3 mb-6"><input id="rec-t" type="text" placeholder="Plat" class="bg-white/5 border border-white/10 p-3 rounded-xl text-sm font-bold"><textarea id="rec-d" placeholder="Préparation..." class="bg-white/5 border border-white/10 p-3 rounded-xl text-sm h-24"></textarea><button onclick="addR()" class="bg-green-600 py-3 rounded-xl font-black uppercase text-xs">Sauvegarder</button></div>
-                    ${state.recipes.map((r, i) => `<div class="border-t border-white/5 pt-4 mb-4"><div class="flex justify-between items-start"><h4 class="font-black text-gray-200 text-xs uppercase">${r.title}</h4><button onclick="removeR(${i})" class="text-gray-700 text-[10px]">✕</button></div><p class="text-[10px] text-gray-400 mt-2 leading-relaxed">${r.desc}</p></div>`).join('')}
+                <div class="card">
+                    <h3 class="font-black mb-4 text-[10px] tracking-widest uppercase text-blue-400">Recettes</h3>
+                    <div class="flex flex-col gap-2 mb-6"><input id="rec-t" type="text" placeholder="Nom" class="bg-white/5 border border-white/10 p-3 rounded-xl text-sm font-bold"><textarea id="rec-d" placeholder="Préparation..." class="bg-white/5 border border-white/10 p-3 rounded-xl text-sm h-24"></textarea><button onclick="addR()" class="bg-green-600 py-3 rounded-xl font-black uppercase text-[10px]">Sauvegarder</button></div>
+                    ${state.recipes.map((r, i) => `
+                        <div class="border-b border-white/5 pb-2 mb-2">
+                            <div class="recipe-header" onclick="toggleRecipe(${i})">
+                                <h4 class="font-bold text-gray-100 text-xs">${r.title}</h4>
+                                <span class="text-gray-600 text-[10px]">Détails</span>
+                            </div>
+                            <p id="recipe-body-${i}" class="hidden text-[10px] text-gray-500 mt-2 whitespace-pre-line">${r.desc}</p>
+                            <button onclick="removeR(${i})" class="text-red-900 text-[9px] uppercase mt-1">Supprimer</button>
+                        </div>
+                    `).join('')}
                 </div>`;
         }
 
+        function toggleRecipe(i) { const b = document.getElementById(`recipe-body-${i}`); b.classList.toggle('hidden'); }
         function addI() { const n = document.getElementById('in-n').value, p = document.getElementById('in-p').value; if(n && p) { state.diet.push({name: n, price: parseFloat(p), checked: false}); save(); renderDiet(); } }
         function toggleI(i) { state.diet[i].checked = !state.diet[i].checked; save(); renderDiet(); }
         function removeI(i) { state.diet.splice(i, 1); save(); renderDiet(); }
