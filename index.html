@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Liebherr Performance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --apple-blue: #0A84FF;
+            --apple-bg: #000000;
+            --apple-card: #1C1C1E;
+        }
+        body {
+            background-color: var(--apple-bg);
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding-bottom: 80px;
+        }
+        .card { background-color: var(--apple-card); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .nav-bar { background: rgba(28, 28, 30, 0.8); backdrop-filter: blur(10px); position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; padding: 12px 0; border-top: 0.5px solid #38383A; }
+        .btn-check { background-color: var(--apple-blue); color: white; padding: 8px 16px; border-radius: 20px; font-weight: 600; }
+        .exp-bar { height: 8px; background: #38383A; border-radius: 4px; overflow: hidden; }
+        .exp-fill { height: 100%; background: var(--apple-blue); transition: width 0.3s; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 12px; }
+        .status-done { background: #32D74B; color: black; }
+        .status-failed { background: #FF453A; }
+        .status-current { border: 2px solid var(--apple-blue); }
+    </style>
+</head>
+<body>
+
+    <div class="p-4 sticky top-0 bg-black z-10">
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-xl font-bold">Niveau <span id="lvl-display">1</span></span>
+            <span class="text-xs text-gray-400"><span id="exp-display">0</span> / 500 XP</span>
+        </div>
+        <div class="exp-bar"><div id="exp-fill" class="exp-fill" style="width: 0%"></div></div>
+    </div>
+
+    <div id="app-content" class="p-4">
+        </div>
+
+    <nav class="nav-bar">
+        <button onclick="renderHome()">🏠 Home</button>
+        <button onclick="renderTraining()">💪 Training</button>
+        <button onclick="renderDiet()">🍎 Diet</button>
+    </nav>
+
+    <script>
+        // --- DATA & STATE ---
+        let state = JSON.parse(localStorage.getItem('climbData')) || {
+            exp: 0,
+            history: {}, // Format: "YYYY-MM-DD": "done" | "failed"
+            diet: [
+                {name: "Poulet (500g)", price: 8, checked: false},
+                {name: "Oeufs (x12)", price: 4, checked: false}
+            ],
+            climbingActivities: {
+                volume: null, // stocke le numéro de la semaine
+                projet: null
+            }
+        };
+
+        function save() { 
+            localStorage.setItem('climbData', JSON.stringify(state));
+            updateHeader();
+        }
+
+        function updateHeader() {
+            const lvl = Math.floor(state.exp / 500) + 1;
+            const currentExp = state.exp % 500;
+            document.getElementById('lvl-display').innerText = lvl;
+            document.getElementById('exp-display').innerText = currentExp;
+            document.getElementById('exp-fill').style.width = (currentExp / 500 * 100) + '%';
+        }
+
+        // --- CALENDRIER ---
+        function renderHome() {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const weekNumber = getWeekNumber(now);
+
+            let html = `<div class="card">
+                <h2 class="mb-4 font-bold">Calendrier de Janvier</h2>
+                <div class="calendar-grid">`;
+            
+            for(let i=1; i<=31; i++) {
+                let dateStr = `2026-01-${i.toString().padStart(2, '0')}`;
+                let statusClass = state.history[dateStr] === 'done' ? 'status-done' : (state.history[dateStr] === 'failed' ? 'status-failed' : '');
+                if(dateStr === todayStr) statusClass += ' status-current';
+                html += `<div class="day ${statusClass}">${i}</div>`;
+            }
+            
+            html += `</div></div>`;
+
+            // Mission du jour
+            html += `<div class="card">
+                <h3 class="text-gray-400 text-sm mb-1">MISSION DU JOUR</h3>
+                <p class="text-lg font-bold mb-4">${getDailyMission(now.getDay())}</p>
+                <div id="action-zone">
+                    <button onclick="validateMission('${todayStr}')" class="btn-check w-full">Valider la séance (+50 XP)</button>
+                </div>
+            </div>`;
+
+            document.getElementById('app-content').innerHTML = html;
+        }
+
+        function getDailyMission(day) {
+            const missions = ["Repos & Stretching", "Volley Club + Mobilité", "Escalade (Session)", "Volley Uni + Mini Crux", "Volley Club", "Escalade (Volume)", "Stretching Complet"];
+            return missions[day];
+        }
+
+        function validateMission(dateStr) {
+            const mission = getDailyMission(new Date().getDay());
+            if (mission.includes("Escalade")) {
+                showClimbingChoice(dateStr);
+            } else {
+                completeMission(dateStr);
+            }
+        }
+
+        function showClimbingChoice(dateStr) {
+            const week = getWeekNumber(new Date());
+            let html = `<p class="mb-3 text-sm">Choisir le type de séance :</p>`;
+            
+            if (state.climbingActivities.volume !== week) {
+                html += `<button onclick="completeClimb('${dateStr}', 'volume')" class="btn-check mb-2 w-full bg-green-600">Volume</button>`;
+            }
+            if (state.climbingActivities.projet !== week) {
+                html += `<button onclick="completeClimb('${dateStr}', 'projet')" class="btn-check w-full bg-purple-600">Projet</button>`;
+            }
+            if (state.climbingActivities.volume === week && state.climbingActivities.projet === week) {
+                html = `<p class="text-red-400">Séances hebdomadaires déjà complétées.</p>`;
+            }
+            document.getElementById('action-zone').innerHTML = html;
+        }
+
+        function completeClimb(date, type) {
+            const week = getWeekNumber(new Date());
+            state.climbingActivities[type] = week;
+            completeMission(date);
+        }
+
+        function completeMission(date) {
+            state.history[date] = 'done';
+            state.exp += 50;
+            save();
+            renderHome();
+        }
+
+        // --- DIET & BUDGET ---
+        function renderDiet() {
+            let total = state.diet.reduce((sum, item) => sum + parseFloat(item.price), 0);
+            let budgetColor = total < 50 ? 'text-green-400' : (total === 50 ? 'text-blue-400' : 'text-red-400');
+
+            let html = `<div class="card">
+                <h2 class="text-xl font-bold mb-2">Budget Courses</h2>
+                <p class="text-3xl font-bold ${budgetColor}">${total.toFixed(2)} € / 50 €</p>
+            </div>
+            <div class="card">
+                <div class="flex justify-between mb-4">
+                    <input id="new-item-name" type="text" placeholder="Aliment" class="bg-black p-2 rounded w-1/2">
+                    <input id="new-item-price" type="number" placeholder="Prix" class="bg-black p-2 rounded w-1/4">
+                    <button onclick="addItem()" class="bg-blue-600 px-3 rounded">+</button>
+                </div>
+                <div id="shopping-list">`;
+            
+            state.diet.forEach((item, index) => {
+                html += `<div class="flex justify-between items-center py-2 border-b border-gray-800">
+                    <div onclick="toggleItem(${index})" class="${item.checked ? 'line-through text-gray-500' : ''}">
+                        ${item.name} (${item.price}€)
+                    </div>
+                    <button onclick="removeItem(${index})" class="text-red-500 text-sm">Suppr.</button>
+                </div>`;
+            });
+
+            html += `</div></div>
+            <div class="card">
+                <h2 class="font-bold mb-2">Recette : Dahl de Lentilles</h2>
+                <p class="text-sm text-gray-400">Lentilles corail + curry + riz + épinards. Rapide et efficace pour Liebherr.</p>
+            </div>`;
+            document.getElementById('app-content').innerHTML = html;
+        }
+
+        function addItem() {
+            const name = document.getElementById('new-item-name').value;
+            const price = document.getElementById('new-item-price').value;
+            if(name && price) {
+                state.diet.push({name, price: parseFloat(price), checked: false});
+                save(); renderDiet();
+            }
+        }
+
+        function toggleItem(index) {
+            state.diet[index].checked = !state.diet[index].checked;
+            save(); renderDiet();
+        }
+
+        function removeItem(index) {
+            state.diet.splice(index, 1);
+            save(); renderDiet();
+        }
+
+        // --- HELPERS ---
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+        }
+
+        function renderTraining() {
+            document.getElementById('app-content').innerHTML = `
+                <div class="card">
+                    <h2 class="text-blue-400 font-bold mb-4">Échauffement Volley</h2>
+                    <ul class="text-sm space-y-2">
+                        <li>• <b>Isométrie (Chaise) :</b> 3x45s (Antidouleur genou)</li>
+                        <li>• <b>Tibialis Raises :</b> 15 reps (Protection rotule)</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h2 class="text-green-400 font-bold mb-4">Mobilité Escalade</h2>
+                    <ul class="text-sm space-y-2">
+                        <li>• <b>Grenouille (2 min) :</b> Ouverture hanches</li>
+                        <li>• <b>Pigeon (2 min/côté) :</b> Fessiers/Carres externes</li>
+                        <li>• <b>Mini Crux :</b> Tirage 7s max hangs (Repos 2min)</li>
+                    </ul>
+                </div>`;
+        }
+
+        // Init
+        updateHeader();
+        renderHome();
+    </script>
+</body>
+</html>
